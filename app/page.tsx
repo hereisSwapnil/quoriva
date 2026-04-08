@@ -1,0 +1,149 @@
+'use client';
+
+import { useState } from 'react';
+import SearchBar from '@/components/SearchBar';
+import PaperCard from '@/components/PaperCard';
+import ExplainerPanel from '@/components/ExplainerPanel';
+import HeroSection from '@/components/HeroSection';
+import { Paper } from '@/types';
+
+export default function Home() {
+  const [papers, setPapers] = useState<Paper[]>([]);
+  const [directPaper, setDirectPaper] = useState<Paper | null>(null);
+  const [selectedPaper, setSelectedPaper] = useState<Paper | null>(null);
+  const [explanation, setExplanation] = useState<string>('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [isExplaining, setIsExplaining] = useState(false);
+  const [query, setQuery] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSearch = async (q: string) => {
+    setQuery(q);
+    setIsSearching(true);
+    setError('');
+    setPapers([]);
+    setDirectPaper(null);
+    setSelectedPaper(null);
+    setExplanation('');
+
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setPapers(data.papers || []);
+      setDirectPaper(data.directPaper || null);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Search failed');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleExplain = async (paper: Paper) => {
+    setSelectedPaper(paper);
+    setExplanation('');
+    setIsExplaining(true);
+
+    try {
+      const res = await fetch('/api/explain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paper }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setExplanation(data.explanation);
+    } catch {
+      setExplanation('Failed to generate explanation. Please try again.');
+    } finally {
+      setIsExplaining(false);
+    }
+  };
+
+  return (
+    <main className="min-h-screen text-[color:var(--text)]">
+      <HeroSection />
+
+      <div className="max-w-6xl mx-auto px-5 md:px-6 pb-20 md:pb-24">
+        <SearchBar onSearch={handleSearch} isLoading={isSearching} />
+
+        {error && (
+          <div className="mt-6 p-4 rounded-2xl border border-[color:var(--danger)]/30 bg-[color:var(--danger)]/8 text-[color:var(--danger)] text-sm">
+            {error}
+          </div>
+        )}
+
+        {isSearching && (
+          <div className="mt-12 flex flex-col items-center gap-4 animate-[fadein_250ms_ease-out]">
+            <div className="flex items-center gap-2">
+              <div className="loader-dot" />
+              <div className="loader-dot" />
+              <div className="loader-dot" />
+            </div>
+            <p className="text-[color:var(--text-muted)] text-sm tracking-[0.22em] uppercase font-ui">
+              Querying Semantic Scholar, PubMed & arXiv
+            </p>
+          </div>
+        )}
+
+        {(papers.length > 0 || directPaper) && (
+          <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+            <div className="space-y-4">
+              {directPaper && (
+                <>
+                  <p className="text-[color:var(--text-muted)] text-xs tracking-[0.2em] uppercase mb-5 font-ui">
+                    Searched Paper
+                  </p>
+                  <PaperCard
+                    key={directPaper.id}
+                    paper={directPaper}
+                    isSelected={selectedPaper?.id === directPaper.id}
+                    onExplain={handleExplain}
+                  />
+                  {papers.length > 0 && (
+                    <div className="pt-8 pb-2">
+                      <div className="h-px w-full bg-[#E5E5E5] dark:bg-[#2A2A2A] mb-6"></div>
+                      <p className="text-[color:var(--text-muted)] text-xs tracking-[0.2em] uppercase font-ui">
+                        Similar Papers
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+              
+              {!directPaper && papers.length > 0 && (
+                <p className="text-[color:var(--text-muted)] text-xs tracking-[0.2em] uppercase mb-5 font-ui">
+                  {papers.length} papers found for &ldquo;{query}&rdquo;
+                </p>
+              )}
+              
+              {papers.map((paper) => (
+                <PaperCard
+                  key={paper.id}
+                  paper={paper}
+                  isSelected={selectedPaper?.id === paper.id}
+                  onExplain={handleExplain}
+                />
+              ))}
+            </div>
+
+            <div className="lg:sticky lg:top-8 lg:self-start">
+              <ExplainerPanel
+                paper={selectedPaper}
+                explanation={explanation}
+                isLoading={isExplaining}
+              />
+            </div>
+          </div>
+        )}
+
+        {!isSearching && papers.length === 0 && !directPaper && query && (
+          <div className="mt-16 text-center text-[color:var(--text-muted)]">
+            <p className="text-lg">No papers found for &ldquo;{query}&rdquo;</p>
+            <p className="text-sm mt-2">Try different keywords or a broader topic</p>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
