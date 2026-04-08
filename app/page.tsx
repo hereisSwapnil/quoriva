@@ -16,6 +16,7 @@ export default function Home() {
   const [isExplaining, setIsExplaining] = useState(false);
   const [query, setQuery] = useState('');
   const [error, setError] = useState('');
+  const [mobileView, setMobileView] = useState<'search' | 'explain'>('search');
   
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -27,6 +28,7 @@ export default function Home() {
     setDirectPaper(null);
     setSelectedPaper(null);
     setExplanation('');
+    setMobileView('search');
 
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
@@ -51,6 +53,7 @@ export default function Home() {
     setSelectedPaper(paper);
     setExplanation('');
     setIsExplaining(true);
+    setMobileView('explain');
 
     try {
       const res = await fetch('/api/explain', {
@@ -95,8 +98,24 @@ export default function Home() {
         )}
 
         {(papers.length > 0 || directPaper) && (
-          <div ref={resultsRef} className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-            <div className="space-y-4">
+          <div ref={resultsRef} className="mt-10">
+            <div className="flex lg:hidden mb-6 bg-[color:var(--surface)] p-1.5 rounded-xl border border-[color:var(--line)]">
+              <button
+                onClick={() => setMobileView('search')}
+                className={`flex-1 py-1.5 text-sm font-ui rounded-lg transition-all duration-200 ${mobileView === 'search' ? 'bg-[color:var(--brand)] text-[color:var(--surface)] shadow-md' : 'text-[color:var(--text-muted)]'}`}
+              >
+                Results
+              </button>
+              <button
+                onClick={() => setMobileView('explain')}
+                className={`flex-1 py-1.5 text-sm font-ui rounded-lg transition-all duration-200 ${mobileView === 'explain' ? 'bg-[color:var(--brand)] text-[color:var(--surface)] shadow-md' : 'text-[color:var(--text-muted)]'}`}
+              >
+                AI Explanation
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+              <div className={`space-y-4 ${mobileView === 'explain' ? 'hidden lg:block' : ''}`}>
               {directPaper && (
                 <>
                   <p className="text-[color:var(--text-muted)] text-xs tracking-[0.2em] uppercase mb-5 font-ui">
@@ -137,13 +156,14 @@ export default function Home() {
               ))}
             </div>
 
-            <div className="lg:sticky lg:top-8 lg:self-start">
+            <div className={`lg:sticky lg:top-8 lg:self-start ${mobileView === 'search' ? 'hidden lg:block' : ''}`}>
               <ExplainerPanel
                 paper={selectedPaper}
                 explanation={explanation}
                 isLoading={isExplaining}
               />
             </div>
+          </div>
           </div>
         )}
 
