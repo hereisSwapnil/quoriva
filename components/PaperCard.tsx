@@ -5,6 +5,7 @@ interface Props {
   paper: Paper;
   isSelected: boolean;
   onExplain: (paper: Paper) => void;
+  index?: number;
 }
 
 const sourceColors = {
@@ -13,16 +14,17 @@ const sourceColors = {
   arxiv: { bg: 'bg-[color:#b31b1b]/12', text: 'text-[color:#9c1717]', border: 'border-[color:#b31b1b]/28', label: 'arXiv' },
 };
 
-export default function PaperCard({ paper, isSelected, onExplain }: Props) {
+export default function PaperCard({ paper, isSelected, onExplain, index }: Props) {
   const src = sourceColors[paper.source];
 
   return (
     <div
-      className={`group relative rounded-2xl border p-5 cursor-pointer transition-all duration-200 ${
+      className={`group relative rounded-2xl border p-5 cursor-pointer transition-all duration-200 animotion-fade-in-up ${
         isSelected
           ? 'border-[color:var(--brand)]/60 bg-[color:var(--brand)]/8'
-          : 'border-[color:var(--line)] bg-[color:var(--surface)] hover:border-[color:var(--brand)]/30 hover:-translate-y-0.5'
+          : 'border-[color:var(--line)] bg-[color:var(--surface)] hover:border-[color:var(--brand)]/30 hover:-translate-y-[1px] hover:shadow-[0_8px_20px_rgba(0,0,0,0.07)]'
       }`}
+      style={{ animationDelay: index !== undefined ? `${index * 0.08}s` : '0s' }}
       onClick={() => onExplain(paper)}
     >
       {isSelected && (

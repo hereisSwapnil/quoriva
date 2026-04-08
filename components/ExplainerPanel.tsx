@@ -46,7 +46,7 @@ export default function ExplainerPanel({ paper, explanation, isLoading }: Props)
   const sections = explanation ? parseExplanation(explanation) : [];
 
   return (
-    <div className="glass-panel rounded-2xl overflow-hidden animate-[fadein_280ms_ease-out] mt-[35px]">
+    <div className="glass-panel rounded-2xl overflow-hidden animotion-slide-info-panel mt-[35px]">
       {paper && (
         <div className="p-5 border-b border-[color:var(--line)]/70 bg-[color:var(--surface-strong)]/55">
           <p className="text-[color:var(--text-muted)] text-[10px] font-ui tracking-[0.16em] uppercase mb-2">Now explaining</p>
@@ -72,10 +72,10 @@ export default function ExplainerPanel({ paper, explanation, isLoading }: Props)
         {isLoading && (
           <div className="space-y-4">
             <div className="flex items-center gap-3 mb-6">
-              <div className="flex gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[color:var(--brand)] animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-2 h-2 rounded-full bg-[color:var(--brand)] animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-2 h-2 rounded-full bg-[color:var(--brand)] animate-bounce" style={{ animationDelay: '300ms' }} />
+              <div className="flex gap-1.5 animotion-dots-scale">
+                <span style={{ animationDelay: '0ms' }} />
+                <span style={{ animationDelay: '200ms' }} />
+                <span style={{ animationDelay: '400ms' }} />
               </div>
               <span className="text-[color:var(--text-muted)] text-xs font-ui">OpenAI is reading the paper...</span>
             </div>

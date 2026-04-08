@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import SearchBar from '@/components/SearchBar';
 import PaperCard from '@/components/PaperCard';
 import ExplainerPanel from '@/components/ExplainerPanel';
@@ -16,6 +16,8 @@ export default function Home() {
   const [isExplaining, setIsExplaining] = useState(false);
   const [query, setQuery] = useState('');
   const [error, setError] = useState('');
+  
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const handleSearch = async (q: string) => {
     setQuery(q);
@@ -32,6 +34,12 @@ export default function Home() {
       if (data.error) throw new Error(data.error);
       setPapers(data.papers || []);
       setDirectPaper(data.directPaper || null);
+      
+      if ((data.papers && data.papers.length > 0) || data.directPaper) {
+        setTimeout(() => {
+          resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Search failed');
     } finally {
@@ -75,10 +83,10 @@ export default function Home() {
 
         {isSearching && (
           <div className="mt-12 flex flex-col items-center gap-4 animate-[fadein_250ms_ease-out]">
-            <div className="flex items-center gap-2">
-              <div className="loader-dot" />
-              <div className="loader-dot" />
-              <div className="loader-dot" />
+            <div className="flex items-center gap-1.5 animotion-dots-scale">
+              <span style={{ animationDelay: '0ms' }} />
+              <span style={{ animationDelay: '200ms' }} />
+              <span style={{ animationDelay: '400ms' }} />
             </div>
             <p className="text-[color:var(--text-muted)] text-sm tracking-[0.22em] uppercase font-ui">
               Querying Semantic Scholar, PubMed & arXiv
@@ -87,7 +95,7 @@ export default function Home() {
         )}
 
         {(papers.length > 0 || directPaper) && (
-          <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+          <div ref={resultsRef} className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             <div className="space-y-4">
               {directPaper && (
                 <>
@@ -99,6 +107,7 @@ export default function Home() {
                     paper={directPaper}
                     isSelected={selectedPaper?.id === directPaper.id}
                     onExplain={handleExplain}
+                    index={0}
                   />
                   {papers.length > 0 && (
                     <div className="pt-8 pb-2">
@@ -117,12 +126,13 @@ export default function Home() {
                 </p>
               )}
               
-              {papers.map((paper) => (
+              {papers.map((paper, i) => (
                 <PaperCard
                   key={paper.id}
                   paper={paper}
                   isSelected={selectedPaper?.id === paper.id}
                   onExplain={handleExplain}
+                  index={directPaper ? i + 1 : i}
                 />
               ))}
             </div>
