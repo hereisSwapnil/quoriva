@@ -25,10 +25,10 @@ export default function HeroSection() {
             >
               About
             </Link>
-            <a 
-              href="#" 
-              target="_blank" 
-              rel="noopener noreferrer" 
+            <a
+              href="https://github.com/hereisSwapnil/quoriva"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-[color:var(--text-muted)] hover:text-[color:var(--brand)] transition-colors"
               aria-label="GitHub Repository"
             >

@@ -44,6 +44,8 @@ export default function ExplainerPanel({ paper, explanation, isLoading }: Props)
   }
 
   const sections = explanation ? parseExplanation(explanation) : [];
+  
+  const chatPrompt = paper ? `Here is an academic paper I'm researching:\n\nTitle: ${paper.title}\nAuthors: ${paper.authors?.join(', ') || 'Unknown'}\nAbstract: ${paper.abstract}\nURL: ${paper.url}\n\nI have a few questions about this methodology:` : '';
 
   return (
     <div className="glass-panel rounded-2xl overflow-hidden animotion-slide-info-panel mt-[35px]">
@@ -122,6 +124,25 @@ export default function ExplainerPanel({ paper, explanation, isLoading }: Props)
                   Read full paper ↗
                 </a>
               )}
+            </div>
+
+            <div className="mt-3 flex gap-3">
+              <a
+                href={`https://chatgpt.com/?q=${encodeURIComponent(chatPrompt)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 py-2 rounded-lg border border-[#10A37F]/30 text-[#10A37F] text-xs font-ui hover:bg-[#10A37F]/10 transition-all text-center"
+              >
+                Ask ChatGPT ↗
+              </a>
+              <a
+                href={`https://claude.ai/new?q=${encodeURIComponent(chatPrompt)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 py-2 rounded-lg border border-[#D97757]/30 text-[#D97757] text-xs font-ui hover:bg-[#D97757]/10 transition-all text-center"
+              >
+                Ask Claude ↗
+              </a>
             </div>
           </div>
         )}
