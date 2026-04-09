@@ -35,11 +35,11 @@ export default function Footer() {
                 href="https://www.npmjs.com/package/quoriva-mcp"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-8 h-8 rounded-full border border-[color:var(--line)] flex items-center justify-center text-[color:var(--text-muted)] hover:border-[color:var(--brand)] hover:text-[color:var(--brand)] transition-all"
+                className="w-8 h-8 rounded-full border border-[color:var(--line)] flex items-center justify-center text-[color:var(--text-muted)] hover:border-[color:var(--brand)] hover:text-[color:var(--brand)] hover:scale-110 active:scale-95 transition-all duration-200"
                 aria-label="NPM"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M0 0h24v24H0V0zm19.2 19.2H4.8V4.8h14.4v14.4zM8.4 8.4h7.2v7.2h-2.4v-4.8h-2.4v4.8H8.4V8.4z" />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20,4H4V20h8V8h4V20h4V4" />
                 </svg>
               </a>
             </div>

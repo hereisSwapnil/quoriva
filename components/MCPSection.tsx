@@ -167,7 +167,10 @@ export default function MCPSection() {
           {/* npx install badge */}
           <div className="glass-panel rounded-2xl p-5 flex items-center justify-between gap-4">
             <div>
-              <p className="text-[color:var(--text-muted)] text-[11px] tracking-[0.2em] uppercase font-ui mb-1.5">
+              <p className="text-[color:var(--text-muted)] text-[11px] tracking-[0.2em] uppercase font-ui mb-1.5 flex items-center gap-2">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="opacity-80">
+                  <path d="M20,4H4V20h8V8h4V20h4V4" />
+                </svg>
                 Install via npm
               </p>
               <code className="text-[color:var(--text)] text-sm font-mono">
@@ -218,10 +221,10 @@ export default function MCPSection() {
             href="https://www.npmjs.com/package/quoriva-mcp"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[color:var(--line)] bg-[color:var(--surface)] px-5 py-3 text-xs font-ui uppercase tracking-[0.14em] text-[color:var(--text-muted)] hover:border-[color:var(--brand)]/45 hover:text-[color:var(--brand)] transition-colors"
+            className="group inline-flex items-center justify-center gap-2 rounded-2xl border border-[color:var(--line)] bg-[color:var(--surface)] px-5 py-3 text-xs font-ui uppercase tracking-[0.14em] text-[color:var(--text-muted)] hover:border-[color:var(--brand)]/45 hover:text-[color:var(--brand)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M0 0h24v24H0V0zm19.2 19.2H4.8V4.8h14.4v14.4zM8.4 8.4h7.2v7.2h-2.4v-4.8h-2.4v4.8H8.4V8.4z" />
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="group-hover:scale-110 transition-transform">
+              <path d="M20,4H4V20h8V8h4V20h4V4" />
             </svg>
             View on npm — quoriva-mcp
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
