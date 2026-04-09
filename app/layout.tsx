@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Cabin, Fraunces } from 'next/font/google';
 import './globals.css';
+import Footer from '@/components/Footer';
 
 const cabin = Cabin({
   subsets: ['latin'],
@@ -24,9 +25,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body suppressHydrationWarning className={`${cabin.variable} ${fraunces.variable}`}>
+      <body suppressHydrationWarning className={`${cabin.variable} ${fraunces.variable} flex flex-col min-h-screen`}>
         {children}
+        <Footer />
       </body>
     </html>
   );
 }
+

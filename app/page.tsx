@@ -5,6 +5,7 @@ import SearchBar from '@/components/SearchBar';
 import PaperCard from '@/components/PaperCard';
 import ExplainerPanel from '@/components/ExplainerPanel';
 import HeroSection from '@/components/HeroSection';
+import MCPSection from '@/components/MCPSection';
 import { Paper } from '@/types';
 
 export default function Home() {
@@ -172,6 +173,10 @@ export default function Home() {
             <p className="text-lg">No papers found for &ldquo;{query}&rdquo;</p>
             <p className="text-sm mt-2">Try different keywords or a broader topic</p>
           </div>
+        )}
+
+        {!isSearching && papers.length === 0 && !directPaper && !query && (
+          <MCPSection />
         )}
       </div>
     </main>
