@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Paper } from '@/types';
+import { isRateLimited } from '@/lib/ratelimit';
 
 interface SemanticScholarAuthor {
   name: string;
@@ -271,6 +272,15 @@ async function searchArXiv(query: string): Promise<Paper[]> {
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get('q')?.trim();
   if (!q) return NextResponse.json({ error: 'Query required' }, { status: 400 });
+
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
+  const { isLimited } = await isRateLimited(ip, 'search', 20, 60);
+  if (isLimited) {
+    return NextResponse.json(
+      { error: 'Quoriva is currently handling a high volume of searches. Please wait a moment while we process the queue, or explore our recently explained papers below.' },
+      { status: 429 }
+    );
+  }
 
   const directPaper = await fetchPaperFromUrl(q);
   const query = directPaper?.title || q;

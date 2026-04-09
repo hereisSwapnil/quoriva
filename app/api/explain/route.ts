@@ -1,13 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import redis from '@/lib/redis';
+import { isRateLimited } from '@/lib/ratelimit';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req: NextRequest) {
   const { paper } = await req.json();
-  if (!paper) return NextResponse.json({ error: 'Paper required' }, { status: 400 });
+  if (!paper || !paper.url) return NextResponse.json({ error: 'Paper with URL required' }, { status: 400 });
 
-  const prompt = `You are Quoriva, an AI that makes research papers understandable to anyone curious but non-expert.
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
+  const cacheKey = `quoriva:explanation:${paper.url}`;
+
+  try {
+    // 1. Check Redis Cache
+    const cachedExplanation = await redis.get(cacheKey);
+    if (cachedExplanation) {
+      return NextResponse.json({
+        explanation: cachedExplanation,
+        cached: true
+      });
+    }
+
+    // 2. Cache Miss: Check Rate Limit (10 per min for OpenAI calls)
+    const { isLimited } = await isRateLimited(ip, 'openai', 5, 60);
+    if (isLimited) {
+      return NextResponse.json(
+        { error: 'Quoriva is currently at its processing limit for new explanations. Please try again in a minute, or browse the papers already explained by our community.' },
+        { status: 429 }
+      );
+    }
+
+    // 3. Call OpenAI
+    const prompt = `You are Quoriva, an AI that makes research papers understandable to anyone curious but non-expert.
 
 Here is a research paper:
 
@@ -42,7 +67,6 @@ One sentence a non-expert can remember and share.
 
   Keep each section concise — 2-4 sentences max. No bullet points within sections. Write in flowing, human prose.`;
 
-  try {
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
@@ -55,8 +79,15 @@ One sentence a non-expert can remember and share.
       throw new Error('No explanation was returned by the model');
     }
 
-    return NextResponse.json({ explanation });
+    // 4. Save to Redis (no expiration as per user "no" to 7 days, implying long-term/permanent)
+    await redis.set(cacheKey, explanation);
+
+    return NextResponse.json({
+      explanation,
+      cached: false
+    });
   } catch (e: unknown) {
+    console.error('Explanation error:', e);
     return NextResponse.json(
       { error: e instanceof Error ? e.message : 'Explanation failed' },
       { status: 500 }

@@ -18,7 +18,7 @@ export default function Home() {
   const [query, setQuery] = useState('');
   const [error, setError] = useState('');
   const [mobileView, setMobileView] = useState<'search' | 'explain'>('search');
-  
+
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const handleSearch = async (q: string) => {
@@ -37,7 +37,7 @@ export default function Home() {
       if (data.error) throw new Error(data.error);
       setPapers(data.papers || []);
       setDirectPaper(data.directPaper || null);
-      
+
       if ((data.papers && data.papers.length > 0) || data.directPaper) {
         setTimeout(() => {
           resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -56,6 +56,8 @@ export default function Home() {
     setIsExplaining(true);
     setMobileView('explain');
 
+    const startTime = Date.now();
+
     try {
       const res = await fetch('/api/explain', {
         method: 'POST',
@@ -64,9 +66,19 @@ export default function Home() {
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
+
+      // If cached, ensure at least 2 seconds of loading state for premium feel
+      if (data.cached) {
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, 4000 - elapsed);
+        if (remaining > 0) {
+          await new Promise((resolve) => setTimeout(resolve, remaining));
+        }
+      }
+
       setExplanation(data.explanation);
-    } catch {
-      setExplanation('Failed to generate explanation. Please try again.');
+    } catch (e: unknown) {
+      setExplanation(e instanceof Error ? e.message : 'Failed to generate explanation. Please try again.');
     } finally {
       setIsExplaining(false);
     }
@@ -117,54 +129,54 @@ export default function Home() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
               <div className={`space-y-4 ${mobileView === 'explain' ? 'hidden lg:block' : ''}`}>
-              {directPaper && (
-                <>
-                  <p className="text-[color:var(--text-muted)] text-xs tracking-[0.2em] uppercase mb-5 font-ui">
-                    Searched Paper
-                  </p>
-                  <PaperCard
-                    key={directPaper.id}
-                    paper={directPaper}
-                    isSelected={selectedPaper?.id === directPaper.id}
-                    onExplain={handleExplain}
-                    index={0}
-                  />
-                  {papers.length > 0 && (
-                    <div className="pt-8 pb-2">
-                      <div className="h-px w-full bg-[#E5E5E5] dark:bg-[#2A2A2A] mb-6"></div>
-                      <p className="text-[color:var(--text-muted)] text-xs tracking-[0.2em] uppercase font-ui">
-                        Similar Papers
-                      </p>
-                    </div>
-                  )}
-                </>
-              )}
-              
-              {!directPaper && papers.length > 0 && (
-                <p className="text-[color:var(--text-muted)] text-xs tracking-[0.2em] uppercase mb-5 font-ui">
-                  {papers.length} papers found for &ldquo;{query}&rdquo;
-                </p>
-              )}
-              
-              {papers.map((paper, i) => (
-                <PaperCard
-                  key={paper.id}
-                  paper={paper}
-                  isSelected={selectedPaper?.id === paper.id}
-                  onExplain={handleExplain}
-                  index={directPaper ? i + 1 : i}
-                />
-              ))}
-            </div>
+                {directPaper && (
+                  <>
+                    <p className="text-[color:var(--text-muted)] text-xs tracking-[0.2em] uppercase mb-5 font-ui">
+                      Searched Paper
+                    </p>
+                    <PaperCard
+                      key={directPaper.id}
+                      paper={directPaper}
+                      isSelected={selectedPaper?.id === directPaper.id}
+                      onExplain={handleExplain}
+                      index={0}
+                    />
+                    {papers.length > 0 && (
+                      <div className="pt-8 pb-2">
+                        <div className="h-px w-full bg-[#E5E5E5] dark:bg-[#2A2A2A] mb-6"></div>
+                        <p className="text-[color:var(--text-muted)] text-xs tracking-[0.2em] uppercase font-ui">
+                          Similar Papers
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
 
-            <div className={`lg:sticky lg:top-8 lg:self-start ${mobileView === 'search' ? 'hidden lg:block' : ''}`}>
-              <ExplainerPanel
-                paper={selectedPaper}
-                explanation={explanation}
-                isLoading={isExplaining}
-              />
+                {!directPaper && papers.length > 0 && (
+                  <p className="text-[color:var(--text-muted)] text-xs tracking-[0.2em] uppercase mb-5 font-ui">
+                    {papers.length} papers found for &ldquo;{query}&rdquo;
+                  </p>
+                )}
+
+                {papers.map((paper, i) => (
+                  <PaperCard
+                    key={paper.id}
+                    paper={paper}
+                    isSelected={selectedPaper?.id === paper.id}
+                    onExplain={handleExplain}
+                    index={directPaper ? i + 1 : i}
+                  />
+                ))}
+              </div>
+
+              <div className={`lg:sticky lg:top-8 lg:self-start ${mobileView === 'search' ? 'hidden lg:block' : ''}`}>
+                <ExplainerPanel
+                  paper={selectedPaper}
+                  explanation={explanation}
+                  isLoading={isExplaining}
+                />
+              </div>
             </div>
-          </div>
           </div>
         )}
 
