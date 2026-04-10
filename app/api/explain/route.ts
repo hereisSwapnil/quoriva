@@ -32,9 +32,9 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Call OpenAI
-    const prompt = `You are Quoriva, an AI that makes research papers understandable to anyone curious but non-expert.
+    const prompt = `You are Quoriva, a Senior Research Intelligence Analyst. Your goal is to synthesize complex academic research into a high-value professional briefing for decision-makers and subject matter experts.
 
-Here is a research paper:
+Here is the research paper to analyze:
 
 TITLE: ${paper.title}
 AUTHORS: ${paper.authors?.join(', ') || 'Unknown'}
@@ -42,36 +42,37 @@ YEAR: ${paper.year || 'Unknown'}
 JOURNAL: ${paper.journal || 'Unknown'}
 ABSTRACT: ${paper.abstract}
 
-Generate a structured plain-English explanation with exactly these sections. Use simple language — imagine explaining to a smart friend who has no background in this field.
+Generate a structured, information-dense briefing using precisely these sections:
 
-## 🧠 The Big Idea
-One punchy sentence: what is this paper about in plain English?
+## 📋 Executive Summary
+A concise, high-level synthesis of the paper's core premise and its primary impact on the field. Focus on the "So What?".
 
-## ❓ The Problem They Solved
-What gap or question did researchers address? Why did it matter?
+## 🔬 Methodology & Rigor
+Detail the study design (e.g., Randomized Controlled Trial, Meta-analysis, Longitudinal Study), sample size, control variables, and overall technical rigor. Highlight the robustness of the approach.
 
-## 🔬 How They Did It
-Briefly describe the method or approach — no jargon. Use analogies if helpful.
+## 📊 Key Findings (Data-Driven)
+Synthesize the primary results. Include specific metrics, percentages, p-values, or statistical significance indicators where available in the abstract. Use bullet points for clarity.
 
-## ✨ What They Found
-The key results or discoveries. Be specific but accessible.
+## 🎯 Strategic Implications
+Outline how these findings apply to industry, policy, or professional practice. What should change based on this evidence?
 
-## 🌍 Why It Matters
-Real-world implications. Who benefits? What could change because of this?
+## ⚠️ Critical Analysis
+Provide a skeptical assessment. Identify potential biases (e.g., small sample size, selection bias, funding conflicts), methodological constraints, or gaps that future research must address.
 
-## ⚠️ Limitations
-What didn't they study? What should future research address?
+## 💡 Actionable Takeaway
+One decisive, memory-ready instruction or insight for a professional in this field.
 
-## 💡 Key Takeaway
-One sentence a non-expert can remember and share.
-
-  Keep each section concise — 2-4 sentences max. No bullet points within sections. Write in flowing, human prose.`;
+General Constraints:
+- Use professional, precise language. Avoid being "childish" or overly simplistic.
+- Use bullet points for data and lists to increase information density.
+- Maintain a neutral, objective, and analytical tone.
+- Total length should be around 400-600 words.`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 1024,
-      temperature: 0.2,
+      max_tokens: 1500,
+      temperature: 0.3,
     });
 
     const explanation = completion.choices[0]?.message?.content?.trim();

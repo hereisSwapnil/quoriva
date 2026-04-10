@@ -7,6 +7,16 @@ interface Props {
   isLoading: boolean;
 }
 
+function formatText(text: string) {
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i} className="font-bold text-[color:var(--text)]">{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+}
+
 function parseExplanation(text: string) {
   const sections: { icon: string; heading: string; content: string }[] = [];
   const lines = text.split('\n');
@@ -17,12 +27,13 @@ function parseExplanation(text: string) {
     if (headingMatch) {
       if (current) sections.push(current);
       const full = headingMatch[1].trim();
-      const emojiMatch = full.match(/^([\u{1F000}-\u{1FFFF}]|[\u2600-\u27BF]|⚠️|🧠|❓|🔬|✨|🌍|💡)/u);
+      const emojiMatch = full.match(/^([\u{1F000}-\u{1FFFF}]|[\u2600-\u27BF]|⚠️|🧠|❓|🔬|✨|🌍|💡|📋|📊|🎯)/u);
       const icon = emojiMatch ? emojiMatch[0] : '•';
       const heading = full.replace(icon, '').trim();
       current = { icon, heading, content: '' };
-    } else if (current && line.trim()) {
-      current.content += (current.content ? ' ' : '') + line.trim();
+    } else if (current) {
+      // Append line with a newline to preserve formatting
+      current.content += (current.content ? '\n' : '') + line;
     }
   }
   if (current) sections.push(current);
@@ -98,9 +109,22 @@ export default function ExplainerPanel({ paper, explanation, isLoading }: Props)
                   <span className="text-base" style={{ fontSize: '16px' }}>{section.icon}</span>
                   <h3 className="text-[color:var(--brand)] text-xs font-ui tracking-[0.14em] uppercase">{section.heading}</h3>
                 </div>
-                <p className="text-[color:var(--text)] text-sm font-ui leading-relaxed pl-6 border-l border-[color:var(--line)]">
-                  {section.content}
-                </p>
+                <div className="text-[color:var(--text)] text-sm font-ui leading-relaxed pl-6 border-l border-[color:var(--line)] space-y-2">
+                  {section.content.split('\n').map((line, idx) => {
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine) return null;
+                    const isBullet = trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ');
+                    if (isBullet) {
+                      return (
+                        <li key={idx} className="list-none flex gap-2">
+                          <span className="text-[color:var(--brand)]/50">•</span>
+                          <span>{formatText(trimmedLine.substring(2))}</span>
+                        </li>
+                      );
+                    }
+                    return <p key={idx}>{formatText(line)}</p>;
+                  })}
+                </div>
               </div>
             ))}
 
